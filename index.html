@@ -9,7 +9,6 @@
         :root {
             --primary-color: #2c3e50;
             --secondary-color: #3498db;
-            --accent-color: #e67e22;
             --bg-color: #f4f7f6;
             --text-color: #333;
         }
@@ -32,13 +31,6 @@
             margin-bottom: 30px;
         }
 
-        header h1 {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--secondary-color);
-            padding-bottom: 10px;
-            display: inline-block;
-        }
-
         .search-box {
             position: sticky;
             top: 10px;
@@ -58,19 +50,7 @@
             border-radius: 25px;
             box-sizing: border-box;
             outline: none;
-            transition: border-color 0.3s;
             font-family: 'Cairo', sans-serif;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--secondary-color);
-        }
-
-        .stats {
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
-            text-align: left;
         }
 
         .wishes-list {
@@ -80,64 +60,61 @@
 
         .wish-item {
             background: white;
-            padding: 15px;
-            border-right: 5px solid var(--secondary-color);
-            border-radius: 4px;
+            padding: 12px 15px;
+            border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
-            transition: background 0.3s;
+            transition: transform 0.2s;
         }
 
         .wish-item:hover {
-            background: #fcfcfc;
+            transform: scale(1.01);
+            background: #fafafa;
         }
 
         .wish-number {
             background: var(--primary-color);
             color: white;
-            min-width: 30px;
-            height: 30px;
+            min-width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-left: 15px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
         }
 
-        /* تنسيق أيقونة الخريطة كزر مستقل */
-        .map-link {
-            margin-right: auto;
+        .wish-text {
+            flex-grow: 1;
+            font-size: 16px;
+        }
+
+        /* زر جوجل ماب */
+        .google-maps-btn {
             text-decoration: none;
-            background: #f0f0f0;
-            width: 40px;
-            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-size: 20px;
-            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.3s, transform 0.2s;
+            background: #fff;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .map-link:hover {
-            background: var(--secondary-color);
-            border-color: var(--secondary-color);
-            transform: scale(1.1);
+        .google-maps-btn:hover {
+            background: #f8f9fa;
+            transform: scale(1.15);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
-        /* شكل أيقونة الخريطة (SVG) */
-        .map-icon-svg {
-            fill: #555;
-            width: 24px;
-            height: 24px;
-        }
-
-        .map-link:hover .map-icon-svg {
-            fill: white;
+        .google-maps-btn svg {
+            width: 26px;
+            height: 26px;
         }
 
         .no-results {
@@ -159,21 +136,19 @@
 
 <div class="container">
     <header>
-        <h1>قائمة الرغبات المتاحة</h1>
-        <p>استخدم أيقونة الخريطة 🗺️ لتحديد موقع المكان</p>
+        <h1>دليل المواقع الجغرافية</h1>
+        <p>اضغط على أيقونة <span style="color: #4285F4; font-weight: bold;">Google</span> <span style="color: #EA4335; font-weight: bold;">Maps</span> للذهاب للموقع</p>
     </header>
 
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="اكتب للبحث عن مستشفى، محافظة، أو جهة..." onkeyup="filterWishes()">
-        <div class="stats" id="stats">إجمالي الرغبات: <span id="count">0</span></div>
-    </div>
-
-    <div id="wishesContainer" class="wishes-list">
+        <input type="text" id="searchInput" placeholder="بحث سريع..." onkeyup="filterWishes()">
+        <div style="margin-top:10px; font-size: 13px; color: #666;">
+            عدد النتائج: <span id="count">0</span>
         </div>
-
-    <div id="noResults" class="no-results">
-        لا توجد نتائج تطابق بحثك..
     </div>
+
+    <div id="wishesContainer" class="wishes-list"></div>
+    <div id="noResults" class="no-results">لا توجد نتائج..</div>
 
     <footer>
         powered by RADY
@@ -181,7 +156,7 @@
 </div>
 
 <script>
-    // سيتم استخدام نفس البيانات الضخمة التي قدمتها سابقاً
+    // البيانات (سيتم استدعاء نفس القائمة السابقة)
     const rawData = `الهيئة العامة للرعايه الصحية - أسوان
 الهيئة العامة للرعايه الصحية - الأقصر
 الهيئة العامة للرعايه الصحية - الاسماعيلية
@@ -611,10 +586,11 @@
             
             div.innerHTML = `
                 <span class="wish-number">${index + 1}</span> 
-                <span>${text}</span>
-                <a href="${mapUrl}" target="_blank" class="map-link" title="عرض على الخريطة">
-                    <svg class="map-icon-svg" viewBox="0 0 24 24">
-                        <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                <span class="wish-text">${text}</span>
+                <a href="${mapUrl}" target="_blank" class="google-maps-btn" title="فتح في خرائط جوجل">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.08 16.19 7 11.88 7 9z"/>
+                        <circle fill="#EA4335" cx="12" cy="9" r="2.5"/>
                     </svg>
                 </a>
             `;
@@ -628,15 +604,8 @@
     function filterWishes() {
         const query = document.getElementById('searchInput').value.toLowerCase();
         const filtered = wishes.filter(item => item.toLowerCase().includes(query));
-        
         displayWishes(filtered);
-        
-        const noResults = document.getElementById('noResults');
-        if (filtered.length === 0) {
-            noResults.style.display = 'block';
-        } else {
-            noResults.style.display = 'none';
-        }
+        document.getElementById('noResults').style.display = filtered.length === 0 ? 'block' : 'none';
     }
 </script>
 
