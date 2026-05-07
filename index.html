@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الرغبات </title>
+    <title>دليل الرغبات - PharmaClick</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -78,25 +78,19 @@
             gap: 10px;
         }
 
-        /* تعديل الـ item ليصبح رابطاً */
         .wish-item {
             background: white;
             padding: 15px;
             border-right: 5px solid var(--secondary-color);
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.2s;
             display: flex;
             align-items: center;
-            text-decoration: none; /* إزالة خط الرابط */
-            color: inherit;
-            cursor: pointer;
+            transition: background 0.3s;
         }
 
         .wish-item:hover {
-            transform: translateX(-5px);
-            background: #eef7ff;
-            border-right-color: var(--accent-color);
+            background: #fcfcfc;
         }
 
         .wish-number {
@@ -113,15 +107,37 @@
             font-weight: bold;
         }
 
-        .map-icon {
-            margin-right: auto; /* دفع الأيقونة لأقصى اليسار */
-            color: #e74c3c;
-            font-size: 18px;
-            opacity: 0.7;
+        /* تنسيق أيقونة الخريطة كزر مستقل */
+        .map-link {
+            margin-right: auto;
+            text-decoration: none;
+            background: #f0f0f0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 20px;
+            border: 1px solid #ddd;
         }
 
-        .wish-item:hover .map-icon {
-            opacity: 1;
+        .map-link:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        /* شكل أيقونة الخريطة (SVG) */
+        .map-icon-svg {
+            fill: #555;
+            width: 24px;
+            height: 24px;
+        }
+
+        .map-link:hover .map-icon-svg {
+            fill: white;
         }
 
         .no-results {
@@ -144,11 +160,11 @@
 <div class="container">
     <header>
         <h1>قائمة الرغبات المتاحة</h1>
-        <p>ابحث عن الهيئة، المستشفى، أو المحافظة</p>
+        <p>استخدم أيقونة الخريطة 🗺️ لتحديد موقع المكان</p>
     </header>
 
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="اكتب للبحث.. (اضغط على أي رغبة لفتح الخريطة)" onkeyup="filterWishes()">
+        <input type="text" id="searchInput" placeholder="اكتب للبحث عن مستشفى، محافظة، أو جهة..." onkeyup="filterWishes()">
         <div class="stats" id="stats">إجمالي الرغبات: <span id="count">0</span></div>
     </div>
 
@@ -165,7 +181,7 @@
 </div>
 
 <script>
-    // البيانات (سيتم استخدام نفس بياناتك)
+    // سيتم استخدام نفس البيانات الضخمة التي قدمتها سابقاً
     const rawData = `الهيئة العامة للرعايه الصحية - أسوان
 الهيئة العامة للرعايه الصحية - الأقصر
 الهيئة العامة للرعايه الصحية - الاسماعيلية
@@ -293,7 +309,7 @@
 الهيئة العامة للمستشفيات والمعاهد التعليمية - المعهد القومي لامراض السكر والغدد الصماء
 الهيئة العامة للمستشفيات والمعاهد التعليمية - المعهد القومي للامراض المتوطنة والكبد
 الهيئة العامة للمستشفيات والمعاهد التعليمية - المعهد القومي للكلي والمسالك البولية
-الهيئة العامة للمستشفيات والمعاهد التعليمية - مستشفي دمنهور التعليمي
+الهيئة العامة للمستشفيات والمعاهد التعليمية - مستشفي dمنهور التعليمي
 الهيئة العامة للمستشفيات والمعاهد التعليمية - مستشفي أحمد ماهر والجمهورية التعليمي
 الهيئة العامة للمستشفيات والمعاهد التعليمية - مستشفي أورام الاسماعيلية التعليمي
 الهيئة العامة للمستشفيات والمعاهد التعليمية - مستشفي الاحرار التعليمي
@@ -580,38 +596,35 @@
 مديرية الشئون الصحية - شمال سيناء - مستشفي العريش العام
 مديرية الشئون الصحية - شمال سيناء - مستشفي نخل المركزى`;
 
-    // تحويل النص إلى مصفوفة
     const wishes = rawData.split('\n').filter(line => line.trim() !== "");
     const container = document.getElementById('wishesContainer');
     const countSpan = document.getElementById('count');
 
-    // وظيفة لعرض الرغبات وتحويلها لروابط
     function displayWishes(items) {
         container.innerHTML = "";
         items.forEach((text, index) => {
-            // إنشاء رابط البحث في الخرائط
             const searchQuery = encodeURIComponent(text);
             const mapUrl = `https://www.google.com/maps/search/${searchQuery}`;
 
-            const a = document.createElement('a');
-            a.className = 'wish-item';
-            a.href = mapUrl;
-            a.target = "_blank"; // فتح في صفحة جديدة
+            const div = document.createElement('div');
+            div.className = 'wish-item';
             
-            a.innerHTML = `
+            div.innerHTML = `
                 <span class="wish-number">${index + 1}</span> 
                 <span>${text}</span>
-                <span class="map-icon">📍</span>
+                <a href="${mapUrl}" target="_blank" class="map-link" title="عرض على الخريطة">
+                    <svg class="map-icon-svg" viewBox="0 0 24 24">
+                        <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                    </svg>
+                </a>
             `;
-            container.appendChild(a);
+            container.appendChild(div);
         });
         countSpan.innerText = items.length;
     }
 
-    // عرض الكل في البداية
     displayWishes(wishes);
 
-    // وظيفة البحث
     function filterWishes() {
         const query = document.getElementById('searchInput').value.toLowerCase();
         const filtered = wishes.filter(item => item.toLowerCase().includes(query));
