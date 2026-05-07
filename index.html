@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليل الرغبات</title>
+    <title>الرغبات </title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -78,20 +78,25 @@
             gap: 10px;
         }
 
+        /* تعديل الـ item ليصبح رابطاً */
         .wish-item {
             background: white;
             padding: 15px;
             border-right: 5px solid var(--secondary-color);
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
+            text-decoration: none; /* إزالة خط الرابط */
+            color: inherit;
+            cursor: pointer;
         }
 
         .wish-item:hover {
             transform: translateX(-5px);
-            background: #fdfdfd;
+            background: #eef7ff;
+            border-right-color: var(--accent-color);
         }
 
         .wish-number {
@@ -108,9 +113,15 @@
             font-weight: bold;
         }
 
-        mark {
-            background-color: #ffeb3b;
-            padding: 0 2px;
+        .map-icon {
+            margin-right: auto; /* دفع الأيقونة لأقصى اليسار */
+            color: #e74c3c;
+            font-size: 18px;
+            opacity: 0.7;
+        }
+
+        .wish-item:hover .map-icon {
+            opacity: 1;
         }
 
         .no-results {
@@ -137,7 +148,7 @@
     </header>
 
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="اكتب للبحث (مثلاً: الإسكندرية، أورام، أمانة...)" onkeyup="filterWishes()">
+        <input type="text" id="searchInput" placeholder="اكتب للبحث.. (اضغط على أي رغبة لفتح الخريطة)" onkeyup="filterWishes()">
         <div class="stats" id="stats">إجمالي الرغبات: <span id="count">0</span></div>
     </div>
 
@@ -154,7 +165,7 @@
 </div>
 
 <script>
-    // جلب البيانات من النص الذي قدمته
+    // البيانات (سيتم استخدام نفس بياناتك)
     const rawData = `الهيئة العامة للرعايه الصحية - أسوان
 الهيئة العامة للرعايه الصحية - الأقصر
 الهيئة العامة للرعايه الصحية - الاسماعيلية
@@ -574,14 +585,25 @@
     const container = document.getElementById('wishesContainer');
     const countSpan = document.getElementById('count');
 
-    // وظيفة لعرض الرغبات
+    // وظيفة لعرض الرغبات وتحويلها لروابط
     function displayWishes(items) {
         container.innerHTML = "";
         items.forEach((text, index) => {
-            const div = document.createElement('div');
-            div.className = 'wish-item';
-            div.innerHTML = `<span class="wish-number">${index + 1}</span> <span>${text}</span>`;
-            container.appendChild(div);
+            // إنشاء رابط البحث في الخرائط
+            const searchQuery = encodeURIComponent(text);
+            const mapUrl = `https://www.google.com/maps/search/${searchQuery}`;
+
+            const a = document.createElement('a');
+            a.className = 'wish-item';
+            a.href = mapUrl;
+            a.target = "_blank"; // فتح في صفحة جديدة
+            
+            a.innerHTML = `
+                <span class="wish-number">${index + 1}</span> 
+                <span>${text}</span>
+                <span class="map-icon">📍</span>
+            `;
+            container.appendChild(a);
         });
         countSpan.innerText = items.length;
     }
